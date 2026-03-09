@@ -27,6 +27,7 @@ class LogoApp extends StatefulWidget {
 class _LogoAppState extends State<LogoApp> with SingleTickerProviderStateMixin {
   late AnimationController controller;
   late Animation<double> animation;
+  late Animation<double> animation2;
 
   @override
   void initState() {
@@ -45,6 +46,15 @@ class _LogoAppState extends State<LogoApp> with SingleTickerProviderStateMixin {
       }
     });
 
+    animation2 = Tween<double>(begin: 0, end: 150).animate(controller);
+    animation2.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        controller.forward();
+      }
+    });
+
     controller.forward();
   }
 
@@ -56,22 +66,60 @@ class _LogoAppState extends State<LogoApp> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedLogo(animation);
+    return Column(
+      children: [
+        GrowTransition(animation: animation, child: LogoWidget()),
+        GrowTransition(animation: animation2, child: LogoWidget()),
+      ],
+    );
   }
 }
 
-class AnimatedLogo extends AnimatedWidget {
-  const AnimatedLogo(Animation<double> animation, {super.key})
-    : super(listenable: animation);
+// class AnimatedLogo extends AnimatedWidget {
+//   const AnimatedLogo(Animation<double> animation, {super.key})
+//     : super(listenable: animation);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final Animation<double> animation = listenable as Animation<double>;
+//     return Center(
+//       child: SizedBox(
+//         height: animation.value,
+//         width: animation.value,
+//         child: FlutterLogo(),
+//       ),
+//     );
+//   }
+// }
+
+class LogoWidget extends StatelessWidget {
+  const LogoWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final Animation<double> animation = listenable as Animation<double>;
+    return Container(child: FlutterLogo());
+  }
+}
+
+class GrowTransition extends StatelessWidget {
+  final Widget child;
+  final Animation<double> animation;
+
+  const GrowTransition({
+    super.key,
+    required this.child,
+    required this.animation,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
-      child: SizedBox(
-        height: animation.value,
-        width: animation.value,
-        child: FlutterLogo(),
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, child) {
+          return SizedBox(height: animation.value, width: 200, child: child);
+        },
+        child: child,
       ),
     );
   }
